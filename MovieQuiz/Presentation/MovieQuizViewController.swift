@@ -130,6 +130,8 @@ final class MovieQuizViewController: UIViewController {
         showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer) // 3
 
     }
+    
+    
     // MARK: - Actions
     @IBAction private func yesButtonClicked(_ sender: Any) {
         handleAnswer(true)
