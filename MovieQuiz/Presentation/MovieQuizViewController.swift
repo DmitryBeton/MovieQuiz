@@ -2,7 +2,6 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController {
 
-    
     // MARK: - Outlets
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var textLabel: UILabel!
@@ -50,20 +49,24 @@ final class MovieQuizViewController: UIViewController {
     
     
     // MARK: - Lifecycle
-    override final func viewDidLoad() {
+    override func viewDidLoad() {
         super.viewDidLoad()
-
-        textLabel.textColor = UIColor.ypWhite
-        textLabel.font = UIFont(name: "YSDisplay-Bold", size: 23)
-
-        questionLabel.textColor = UIColor.ypWhite
-        questionLabel.font = UIFont(name: "YSDisplay-Medium", size: 20)
-
-        counterLabel.textColor = UIColor.ypWhite
-
+        setupUI()
         let currentQuestion = questions[currentQuestionIndex]
         show(quiz: convert(model: currentQuestion))
     }
+    
+    
+    // MARK: - UI Setup
+        private func setupUI() {
+            textLabel.textColor = .ypWhite
+            textLabel.font = UIFont(name: "YSDisplay-Bold", size: 23)
+
+            questionLabel.textColor = .ypWhite
+            questionLabel.font = UIFont(name: "YSDisplay-Medium", size: 20)
+
+            counterLabel.textColor = .ypWhite
+        }
     
     
     // MARK: - Private Methods
