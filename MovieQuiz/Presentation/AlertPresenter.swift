@@ -1,8 +1,32 @@
-//
-//  AlertPresenter.swift
-//  MovieQuiz
-//
-//  Created by Дмитрий Чалов on 04.07.2025.
-//
+import UIKit
 
-import Foundation
+
+final class AlertPresenter {
+    private weak var viewController: AlertPresenterProtocol?
+    
+    func setup(viewController: AlertPresenterProtocol?) {
+        self.viewController = viewController
+    }
+    
+    func show(alert model: AlertModel) {
+            guard let viewController = viewController else {
+                return
+            }
+            
+            let alert = UIAlertController(
+                title: model.title,
+                message: model.message,
+                preferredStyle: .alert
+            )
+            
+            let action = UIAlertAction(
+                title: model.buttonText,
+                style: .default) { _ in
+                    model.completion()
+                }
+            
+            alert.addAction(action)
+        viewController.present(alert: alert, animated: true)
+        }
+    }
+
