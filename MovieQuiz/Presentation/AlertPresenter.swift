@@ -3,7 +3,7 @@ import UIKit
 final class AlertPresenter {
     private weak var viewController: AlertPresenterProtocol?
     
-    func setup(viewController: AlertPresenterProtocol?) {
+    init(viewController: AlertPresenterProtocol?) {
         self.viewController = viewController
     }
     
