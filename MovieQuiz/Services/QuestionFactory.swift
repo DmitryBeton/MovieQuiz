@@ -34,7 +34,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
             let index = (0..<self.movies.count).randomElement() ?? 0
             guard !self.movies.isEmpty else {
                 DispatchQueue.main.async {
-                    let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Api error"])
+                    let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Internet error"])
                     self.delegate?.didFailToLoadData(with: error)
                 }
                 return
