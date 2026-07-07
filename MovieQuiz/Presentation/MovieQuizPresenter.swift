@@ -13,24 +13,36 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private let statisticService: StatisticServiceProtocol = StatisticServiceImplementation()
     private var questionFactory: QuestionFactoryProtocol?
     private weak var viewController: MovieQuizViewControllerProtocol?
+    private var isLoadingData = false
 
-    init(viewController: MovieQuizViewControllerProtocol) {
+    init(
+        viewController: MovieQuizViewControllerProtocol,
+        questionFactory: QuestionFactoryProtocol? = nil
+    ) {
         self.viewController = viewController
-        
-        questionFactory = QuestionFactory(
-            moviesLoader: MoviesLoader(),
-            delegate: self)
-        viewController.showLoadingIndicator()
-        questionFactory?.loadData()    }
+
+        if let questionFactory {
+            self.questionFactory = questionFactory
+        } else {
+            self.questionFactory = QuestionFactory(
+                moviesLoader: MoviesLoader(),
+                delegate: self
+            )
+        }
+
+        startLoadingData()
+    }
     
     // MARK: - QuestionFactoryDelegate
     
     func didLoadDataFromServer() {
+        isLoadingData = false
         viewController?.hideLoadingIndicator() // скрываем индикатор загрузки
         questionFactory?.requestNextQuestion()
     }
     
     func didFailToLoadData(with error: Error) {
+        isLoadingData = false
         viewController?.showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
     
@@ -50,7 +62,13 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
+        currentQuestion = nil
+        viewController?.offButtons()
         questionFactory?.requestNextQuestion()
+    }
+
+    func retryLoading() {
+        startLoadingData()
     }
     
     func switchToNextQuestion() {
@@ -123,6 +141,15 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
         viewController?.offButtons()
         self.showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer) // 3
+    }
+
+    private func startLoadingData() {
+        guard !isLoadingData else { return }
+
+        isLoadingData = true
+        viewController?.offButtons()
+        viewController?.showLoadingIndicator()
+        questionFactory?.loadData()
     }
     
 }

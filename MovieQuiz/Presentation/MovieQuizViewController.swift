@@ -77,7 +77,7 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
                                buttonText: "Попробовать еще раз") { [weak self] in
             guard let self = self else { return }
             
-            presenter.restartGame()
+            presenter.retryLoading()
             
         }
         
