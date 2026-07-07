@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 final class AlertPresenter {
     private weak var viewController: AlertPresenterProtocol?
     
@@ -28,4 +29,3 @@ final class AlertPresenter {
         viewController.present(alert: alert, animated: true)
     }
 }
-

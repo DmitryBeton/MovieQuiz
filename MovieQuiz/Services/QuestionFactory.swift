@@ -42,11 +42,14 @@ final class QuestionFactory: QuestionFactoryProtocol {
             
             guard let movie = self.movies[safe: index] else { return }
             
-            var imageData = Data()
+            let imageData: Data
             do {
                 imageData = try Data(contentsOf: movie.resizedImageURL)
             } catch {
-                self.delegate?.didFailToLoadData(with: error)
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.didFailToLoadData(with: error)
+                }
+                return
             }
             
             // Выбор рандомного вопроса

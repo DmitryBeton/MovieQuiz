@@ -1,3 +1,4 @@
+@MainActor
 protocol QuestionFactoryDelegate: AnyObject {
     func didReceiveNextQuestion(question: QuizQuestion)
     func didLoadDataFromServer() // сообщение об успешной загрузке

@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Properties
@@ -38,9 +39,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         currentQuestion = question
         let viewModel = convert(model: question)
         
-        DispatchQueue.main.async { [weak self] in
-            self?.viewController?.show(quiz: viewModel)
-        }
+        viewController?.show(quiz: viewModel)
     }
     
     // MARK: - Methods
