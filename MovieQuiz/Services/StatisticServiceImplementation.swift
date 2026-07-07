@@ -1,6 +1,6 @@
 import Foundation
 
-final class StatisticServiceImplementation: StatisticService, StatisticServiceProtocol {
+final class StatisticServiceImplementation: StatisticServiceProtocol {
     
     // MARK: - enum
     private enum Keys: String {
@@ -14,7 +14,7 @@ final class StatisticServiceImplementation: StatisticService, StatisticServicePr
     }
     
     // MARK: - init
-    override init() {
+    init() {
         if storage.object(forKey: Keys.totalCorrect.rawValue) == nil {
             storage.set(0, forKey: Keys.totalCorrect.rawValue)
             storage.set(0, forKey: Keys.totalQuestions.rawValue)

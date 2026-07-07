@@ -3,7 +3,7 @@ import UIKit
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Properties
-    let questionsAmount: Int = 10
+    private let questionsAmount: Int = 10
     private var currentQuestionIndex = 0
     
     private var currentQuestion: QuizQuestion?
@@ -11,8 +11,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     private let statisticService: StatisticServiceProtocol = StatisticServiceImplementation()
     private var questionFactory: QuestionFactoryProtocol?
-    weak var viewController: MovieQuizViewControllerProtocol?
-    
+    private weak var viewController: MovieQuizViewControllerProtocol?
+
     init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         
