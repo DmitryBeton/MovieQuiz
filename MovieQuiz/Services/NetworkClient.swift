@@ -9,6 +9,7 @@ struct NetworkClient: NetworkRouting {
     
     private enum NetworkError: Error {
         case codeError
+        case emptyData
     }
     
     func fetch(url: URL, handler: @escaping (Result<Data, Error>) -> Void) {
@@ -29,7 +30,10 @@ struct NetworkClient: NetworkRouting {
             }
             
             // Возвращаем данные
-            guard let data = data else { return }
+            guard let data else {
+                handler(.failure(NetworkError.emptyData))
+                return
+            }
             handler(.success(data))
         }
         
