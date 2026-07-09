@@ -1,6 +1,6 @@
 import Foundation
 
-struct QuizQuestion {
+struct QuizQuestion: Sendable {
     // постер фильма
     let image: Data
     // вопрос о рейтинге фильма
