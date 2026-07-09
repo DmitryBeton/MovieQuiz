@@ -4,6 +4,13 @@ import UIKit
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Properties
+    private enum QuizState {
+        case loading
+        case ready
+        case answering
+        case error
+    }
+
     private let questionsAmount: Int = 10
     private var currentQuestionIndex = 0
     
@@ -14,6 +21,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var isLoadingData = false
+    private var state: QuizState?
 
     init(
         viewController: MovieQuizViewControllerProtocol,
@@ -37,12 +45,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     func didLoadDataFromServer() {
         isLoadingData = false
-        viewController?.hideLoadingIndicator() // скрываем индикатор загрузки
         questionFactory?.requestNextQuestion()
     }
     
     func didFailToLoadData(with error: Error) {
         isLoadingData = false
+        setState(.error)
         viewController?.showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
     
@@ -52,6 +60,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         let viewModel = convert(model: question)
         
         viewController?.show(quiz: viewModel)
+        setState(.ready)
     }
     
     // MARK: - Methods
@@ -63,7 +72,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         currentQuestionIndex = 0
         correctAnswers = 0
         currentQuestion = nil
-        viewController?.offButtons()
+        setState(.loading)
         questionFactory?.requestNextQuestion()
     }
 
@@ -136,10 +145,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Private methods
     private func handleAnswer(_ answer: Bool) {
-        guard let currentQuestion = currentQuestion else {
+        guard state == .ready, let currentQuestion = currentQuestion else {
             return
         }
-        viewController?.offButtons()
+
+        setState(.answering)
         self.showAnswerResult(isCorrect: answer == currentQuestion.correctAnswer) // 3
     }
 
@@ -147,9 +157,30 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         guard !isLoadingData else { return }
 
         isLoadingData = true
-        viewController?.offButtons()
-        viewController?.showLoadingIndicator()
+        setState(.loading)
         questionFactory?.loadData()
+    }
+
+    private func setState(_ state: QuizState) {
+        self.state = state
+        applyState(state)
+    }
+
+    private func applyState(_ state: QuizState) {
+        switch state {
+        case .loading:
+            viewController?.setAnswerButtonsEnabled(false)
+            viewController?.showLoadingIndicator()
+        case .ready:
+            viewController?.hideLoadingIndicator()
+            viewController?.setAnswerButtonsEnabled(true)
+        case .answering:
+            viewController?.hideLoadingIndicator()
+            viewController?.setAnswerButtonsEnabled(false)
+        case .error:
+            viewController?.hideLoadingIndicator()
+            viewController?.setAnswerButtonsEnabled(false)
+        }
     }
     
 }

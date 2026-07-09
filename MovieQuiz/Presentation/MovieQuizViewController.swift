@@ -46,8 +46,6 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
         imageView.image = step.image
         
         imageView.layer.borderWidth = 0
-        self.yesButton.isEnabled = true
-        self.noButton.isEnabled = true
     }
     
     func show(quiz result: QuizResultsViewModel) {
@@ -70,8 +68,6 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
     }
     
     func showNetworkError(message: String) {
-        hideLoadingIndicator()
-        
         let model = AlertModel(title: "Ошибка",
                                message: message,
                                buttonText: "Попробовать еще раз") { [weak self] in
@@ -91,11 +87,12 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
     
     func hideLoadingIndicator() {
         activityIndicator.isHidden = true // говорим, что индикатор загрузки скрыт
+        activityIndicator.stopAnimating()
     }
     
-    func offButtons() {
-        self.yesButton.isEnabled = false
-        self.noButton.isEnabled = false
+    func setAnswerButtonsEnabled(_ isEnabled: Bool) {
+        self.yesButton.isEnabled = isEnabled
+        self.noButton.isEnabled = isEnabled
     }
     
     func highlightImageBorder(isCorrectAnswer: Bool) {

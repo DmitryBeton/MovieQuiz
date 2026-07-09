@@ -4,10 +4,13 @@ import XCTest
 @MainActor
 final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     private(set) var showLoadingIndicatorCallCount = 0
-    private(set) var offButtonsCallCount = 0
+    private(set) var hideLoadingIndicatorCallCount = 0
+    private(set) var answerButtonsEnabledStates: [Bool] = []
+    private(set) var showStepCallCount = 0
+    private(set) var highlightImageBorderCallCount = 0
 
     func show(quiz step: QuizStepViewModel) {
-        
+        showStepCallCount += 1
     }
     
     func show(quiz result: QuizResultsViewModel) {
@@ -15,7 +18,7 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     }
     
     func highlightImageBorder(isCorrectAnswer: Bool) {
-        
+        highlightImageBorderCallCount += 1
     }
     
     func showLoadingIndicator() {
@@ -23,11 +26,11 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     }
     
     func hideLoadingIndicator() {
-        
+        hideLoadingIndicatorCallCount += 1
     }
     
-    func offButtons() {
-        offButtonsCallCount += 1
+    func setAnswerButtonsEnabled(_ isEnabled: Bool) {
+        answerButtonsEnabledStates.append(isEnabled)
     }
     
     func showNetworkError(message: String) {
@@ -93,7 +96,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         XCTAssertEqual(questionFactoryMock.loadDataCallCount, 2)
         XCTAssertEqual(questionFactoryMock.requestNextQuestionCallCount, 0)
         XCTAssertEqual(viewControllerMock.showLoadingIndicatorCallCount, 2)
-        XCTAssertEqual(viewControllerMock.offButtonsCallCount, 2)
+        XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false, false, false])
     }
 
     @MainActor
@@ -109,7 +112,42 @@ final class MovieQuizPresenterTests: XCTestCase {
 
         XCTAssertEqual(questionFactoryMock.loadDataCallCount, 1)
         XCTAssertEqual(viewControllerMock.showLoadingIndicatorCallCount, 1)
-        XCTAssertEqual(viewControllerMock.offButtonsCallCount, 1)
+        XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false])
+    }
+
+    @MainActor
+    func testReceivingQuestionSwitchesToReadyAndEnablesButtons() {
+        let viewControllerMock = MovieQuizViewControllerMock()
+        let questionFactoryMock = QuestionFactoryMock()
+        let sut = MovieQuizPresenter(
+            viewController: viewControllerMock,
+            questionFactory: questionFactoryMock
+        )
+        let question = QuizQuestion(image: Data(), text: "Question", correctAnswer: true)
+
+        sut.didReceiveNextQuestion(question: question)
+
+        XCTAssertEqual(viewControllerMock.showStepCallCount, 1)
+        XCTAssertEqual(viewControllerMock.hideLoadingIndicatorCallCount, 1)
+        XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false, true])
+    }
+
+    @MainActor
+    func testAnswerSwitchesToAnsweringAndIgnoresSecondTap() {
+        let viewControllerMock = MovieQuizViewControllerMock()
+        let questionFactoryMock = QuestionFactoryMock()
+        let sut = MovieQuizPresenter(
+            viewController: viewControllerMock,
+            questionFactory: questionFactoryMock
+        )
+        let question = QuizQuestion(image: Data(), text: "Question", correctAnswer: true)
+
+        sut.didReceiveNextQuestion(question: question)
+        sut.yesButtonClicked(true)
+        sut.noButtonClicked(false)
+
+        XCTAssertEqual(viewControllerMock.highlightImageBorderCallCount, 1)
+        XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false, true, false])
     }
 }
 
