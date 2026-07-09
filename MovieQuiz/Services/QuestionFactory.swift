@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class QuestionFactory: QuestionFactoryProtocol {
     
     private let moviesLoader: MoviesLoading
@@ -14,7 +15,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
     
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 guard let self = self else { return }
                 switch result {
                 case .success(let mostPopularMovies):
@@ -29,24 +30,26 @@ final class QuestionFactory: QuestionFactoryProtocol {
     }
     
     func requestNextQuestion() {
-        DispatchQueue.global().async { [weak self] in
-            guard let self = self else { return }
-            let index = (0..<self.movies.count).randomElement() ?? 0
-            guard !self.movies.isEmpty else {
-                DispatchQueue.main.async {
+        let movies = movies
+
+        DispatchQueue.global().async { [movies, weak self] in
+            guard !movies.isEmpty else {
+                Task { @MainActor in
                     let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Internet error"])
-                    self.delegate?.didFailToLoadData(with: error)
+                    self?.delegate?.didFailToLoadData(with: error)
                 }
                 return
             }
+
+            let index = (0..<movies.count).randomElement() ?? 0
             
-            guard let movie = self.movies[safe: index] else { return }
+            guard let movie = movies[safe: index] else { return }
             
             let imageData: Data
             do {
                 imageData = try Data(contentsOf: movie.resizedImageURL)
             } catch {
-                DispatchQueue.main.async { [weak self] in
+                Task { @MainActor in
                     self?.delegate?.didFailToLoadData(with: error)
                 }
                 return
@@ -71,7 +74,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
                                         text: text,
                                         correctAnswer: correctAnswer)
             
-            DispatchQueue.main.async { [weak self] in
+            Task { @MainActor in
                 guard let self = self else { return }
                 self.delegate?.didReceiveNextQuestion(question: question)
             }

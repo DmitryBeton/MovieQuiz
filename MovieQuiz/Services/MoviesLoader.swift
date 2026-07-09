@@ -6,7 +6,7 @@
 import Foundation
 
 protocol MoviesLoading {
-    func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void)
+    func loadMovies(handler: @escaping @Sendable (Result<MostPopularMovies, Error>) -> Void)
 }
 
 struct MoviesLoader: MoviesLoading {
@@ -26,7 +26,7 @@ struct MoviesLoader: MoviesLoading {
         return url
     }
     
-    func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void) {
+    func loadMovies(handler: @escaping @Sendable (Result<MostPopularMovies, Error>) -> Void) {
         networkClient.fetch(url: mostPopularMoviesUrl) { result in
             switch result {
             case .success(let data):
@@ -42,4 +42,3 @@ struct MoviesLoader: MoviesLoading {
         }
     }
 }
-

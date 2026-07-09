@@ -68,7 +68,7 @@ final class QuestionFactoryTests: XCTestCase {
 private struct MoviesLoaderStub: MoviesLoading {
     let result: Result<MostPopularMovies, Error>
 
-    func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void) {
+    func loadMovies(handler: @escaping @Sendable (Result<MostPopularMovies, Error>) -> Void) {
         handler(result)
     }
 }

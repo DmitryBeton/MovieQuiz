@@ -7,26 +7,34 @@
 
 import XCTest
 
+@MainActor
 final class MovieQuizUITests: XCTestCase {
     // swiftlint:disable:next implicitly_unwrapped_optional
-    var app: XCUIApplication!
+    nonisolated(unsafe) var app: XCUIApplication!
     func testScreenCast() throws { }
     
-    override func setUpWithError() throws {
+    nonisolated override func setUpWithError() throws {
         try super.setUpWithError()
-        
-        app = XCUIApplication()
-        app.launch()
-        
+
+        app = MainActor.assumeIsolated {
+            let app = XCUIApplication()
+            app.launch()
+            return app
+        }
+
         // это специальная настройка для тестов: если один тест не прошёл,
         // то следующие тесты запускаться не будут; и правда, зачем ждать?
         continueAfterFailure = false
     }
-    override func tearDownWithError() throws {
+
+    nonisolated override func tearDownWithError() throws {
         try super.tearDownWithError()
-        
-        app.terminate()
-        app = nil
+
+        let app = app
+        MainActor.assumeIsolated {
+            app?.terminate()
+        }
+        self.app = nil
     }
     
     func testYesButton() {

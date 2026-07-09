@@ -9,6 +9,7 @@ import XCTest
 @testable import MovieQuiz
 
 
+@MainActor
 final class MoviesLoaderTests: XCTestCase {
     func testSuccessLoading() throws {
         // Given
@@ -63,7 +64,7 @@ final class MoviesLoaderTests: XCTestCase {
         
         let emulateError: Bool // этот параметр нужен, чтобы заглушка эмулировала либо ошибку сети, либо успешный ответ
         
-        func fetch(url: URL, handler: @escaping (Result<Data, Error>) -> Void) {
+        func fetch(url: URL, handler: @escaping @Sendable (Result<Data, Error>) -> Void) {
             if emulateError {
                 handler(.failure(TestError.test))
             } else {
