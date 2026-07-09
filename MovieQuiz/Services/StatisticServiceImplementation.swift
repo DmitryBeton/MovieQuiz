@@ -14,7 +14,9 @@ final class StatisticServiceImplementation: StatisticServiceProtocol {
     }
     
     // MARK: - init
-    init() {
+    init(storage: UserDefaults = .standard) {
+        self.storage = storage
+
         if storage.object(forKey: Keys.totalCorrect.rawValue) == nil {
             storage.set(0, forKey: Keys.totalCorrect.rawValue)
             storage.set(0, forKey: Keys.totalQuestions.rawValue)
@@ -24,7 +26,7 @@ final class StatisticServiceImplementation: StatisticServiceProtocol {
     
     // MARK: - private vars
     private var correctAnswers: Int = 0
-    private let storage: UserDefaults = .standard
+    private let storage: UserDefaults
     
     // MARK: - properties
     var gamesCount: Int {
@@ -61,6 +63,8 @@ final class StatisticServiceImplementation: StatisticServiceProtocol {
     
     // MARK: - functions
     func store(correct count: Int, total amount: Int) {
+        let shouldUpdateBestGame = bestGame.total == 0
+
         gamesCount += 1
         
         let newTotalCorrect = storage.integer(forKey: Keys.totalCorrect.rawValue) + count
@@ -70,7 +74,7 @@ final class StatisticServiceImplementation: StatisticServiceProtocol {
         storage.set(newTotalQuestions, forKey: Keys.totalQuestions.rawValue)
         
         let currentGame = GameResult(correct: count, total: amount, date: Date())
-        if currentGame.isBetterThan(bestGame) {
+        if shouldUpdateBestGame || currentGame.isBetterThan(bestGame) {
             bestGame = currentGame
         }
     }

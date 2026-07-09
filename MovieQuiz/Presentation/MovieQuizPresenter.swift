@@ -17,7 +17,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
     
-    private let statisticService: StatisticServiceProtocol = StatisticServiceImplementation()
+    private let statisticService: StatisticServiceProtocol
     private var questionFactory: QuestionFactoryProtocol?
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var isLoadingData = false
@@ -25,9 +25,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
     init(
         viewController: MovieQuizViewControllerProtocol,
-        questionFactory: QuestionFactoryProtocol? = nil
+        questionFactory: QuestionFactoryProtocol? = nil,
+        statisticService: StatisticServiceProtocol = StatisticServiceImplementation()
     ) {
         self.viewController = viewController
+        self.statisticService = statisticService
 
         if let questionFactory {
             self.questionFactory = questionFactory
@@ -131,8 +133,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         let bestGame = statisticService.bestGame
         
         let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
-        let currentGameResultLine = "Ваш результат: \(correctAnswers)\\\(questionsAmount)"
-        let bestGameInfoLine = "Рекорд: \(bestGame.correct)\\\(bestGame.total)"
+        let currentGameResultLine = "Ваш результат: \(correctAnswers)/\(questionsAmount)"
+        let bestGameInfoLine = "Рекорд: \(bestGame.correct)/\(bestGame.total)"
         + " (\(bestGame.date.dateTimeString))"
         let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
         

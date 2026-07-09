@@ -149,6 +149,24 @@ final class MovieQuizPresenterTests: XCTestCase {
         XCTAssertEqual(viewControllerMock.highlightImageBorderCallCount, 1)
         XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false, true, false])
     }
+
+    @MainActor
+    func testResultsMessageUsesSlashFormat() {
+        let viewControllerMock = MovieQuizViewControllerMock()
+        let questionFactoryMock = QuestionFactoryMock()
+        let statisticServiceMock = StatisticServiceMock()
+        let sut = MovieQuizPresenter(
+            viewController: viewControllerMock,
+            questionFactory: questionFactoryMock,
+            statisticService: statisticServiceMock
+        )
+
+        let message = sut.makeResultsMessage()
+
+        XCTAssertTrue(message.contains("Ваш результат: 0/10"))
+        XCTAssertTrue(message.contains("Рекорд: 8/10"))
+        XCTAssertFalse(message.contains("\\"))
+    }
 }
 
 private final class QuestionFactoryMock: QuestionFactoryProtocol {
@@ -166,4 +184,18 @@ private final class QuestionFactoryMock: QuestionFactoryProtocol {
 
 private enum TestError: Error {
     case loadingFailed
+}
+
+private final class StatisticServiceMock: StatisticServiceProtocol {
+    var gamesCount = 3
+    var bestGame = GameResult(
+        correct: 8,
+        total: 10,
+        date: Date(timeIntervalSince1970: 0)
+    )
+    var totalAccuracy = 70.0
+
+    func store(correct count: Int, total amount: Int) {
+
+    }
 }
