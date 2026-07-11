@@ -43,6 +43,7 @@ struct MoviesLoader: MoviesLoading {
     }
 }
 
+#if DEBUG
 /// Локальная замена сетевого слоя, которая включается только launch-аргументом UI-тестов.
 final class UITestNetworkStub: MoviesLoading, ImageLoading, @unchecked Sendable {
     private let imageData = Data(base64Encoded:
@@ -75,3 +76,4 @@ final class UITestNetworkStub: MoviesLoading, ImageLoading, @unchecked Sendable 
 private struct UITestImageLoadingTask: ImageLoadingTask {
     func cancel() { }
 }
+#endif

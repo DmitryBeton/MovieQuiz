@@ -19,6 +19,7 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-ui-testing") {
             let networkStub = UITestNetworkStub()
             presenter = MovieQuizPresenter(
@@ -30,6 +31,9 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
         } else {
             presenter = MovieQuizPresenter(viewController: self)
         }
+        #else
+        presenter = MovieQuizPresenter(viewController: self)
+        #endif
         alertPresenter = AlertPresenter(viewController: self)
     }
     
