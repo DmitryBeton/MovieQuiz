@@ -22,20 +22,26 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var isLoadingData = false
     private var state: QuizState?
+    private let answerResultDelay: TimeInterval
 
     init(
         viewController: MovieQuizViewControllerProtocol,
         questionFactory: QuestionFactoryProtocol? = nil,
-        statisticService: StatisticServiceProtocol = StatisticServiceImplementation()
+        statisticService: StatisticServiceProtocol = StatisticServiceImplementation(),
+        moviesLoader: MoviesLoading = MoviesLoader(),
+        imageLoader: ImageLoading = ImageLoader(),
+        answerResultDelay: TimeInterval = 1
     ) {
         self.viewController = viewController
         self.statisticService = statisticService
+        self.answerResultDelay = answerResultDelay
 
         if let questionFactory {
             self.questionFactory = questionFactory
         } else {
             self.questionFactory = QuestionFactory(
-                moviesLoader: MoviesLoader(),
+                moviesLoader: moviesLoader,
+                imageLoader: imageLoader,
                 delegate: self
             )
         }
@@ -121,7 +127,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + answerResultDelay) { [weak self] in
             guard let self = self else { return }
             self.showNextQuestionOrResults()
         }

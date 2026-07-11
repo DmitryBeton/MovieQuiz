@@ -18,6 +18,7 @@ final class MovieQuizUITests: XCTestCase {
 
         app = MainActor.assumeIsolated {
             let app = XCUIApplication()
+            app.launchArguments = ["-ui-testing"]
             app.launch()
             return app
         }
@@ -38,67 +39,91 @@ final class MovieQuizUITests: XCTestCase {
     }
     
     func testYesButton() {
-        sleep(3)
         let indexLabel = app.staticTexts["Index"]
-        let firstPoster = app.images["Poster"]
-        let firstPosterData = firstPoster.screenshot().pngRepresentation
-        
+        let yesButton = app.buttons["Yes"]
+
+        waitForReadyQuestion(number: 1)
         app.buttons["Yes"].tap()
-        sleep(3)
-        
-        let secondPoster = app.images["Poster"]
-        let secondPosterData = secondPoster.screenshot().pngRepresentation
-        
-        XCTAssertNotEqual(firstPosterData, secondPosterData)
+
+        waitForLabel(indexLabel, toEqual: "2/10")
         XCTAssertEqual(indexLabel.label, "2/10")
+        XCTAssertTrue(yesButton.isEnabled)
     }
     
     func testNoButton() {
-        sleep(3)
         let indexLabel = app.staticTexts["Index"]
-        let firstPoster = app.images["Poster"]
-        let firstPosterData = firstPoster.screenshot().pngRepresentation
-        
+        let noButton = app.buttons["No"]
+
+        waitForReadyQuestion(number: 1)
         app.buttons["No"].tap()
-        sleep(3)
-        
-        let secondPoster = app.images["Poster"]
-        let secondPosterData = secondPoster.screenshot().pngRepresentation
-        
-        XCTAssertNotEqual(firstPosterData, secondPosterData)
+
+        waitForLabel(indexLabel, toEqual: "2/10")
         XCTAssertEqual(indexLabel.label, "2/10")
-        
+        XCTAssertTrue(noButton.isEnabled)
     }
     
     func testGameFinish() {
-        sleep(2)
-        for _ in 1...10 {
+        for questionNumber in 1...10 {
+            waitForReadyQuestion(number: questionNumber)
             app.buttons["No"].tap()
-            sleep(2)
         }
-        
+
         let alert = app.alerts["Этот раунд окончен!"]
-        
-        XCTAssertTrue(alert.exists)
-        XCTAssertTrue(alert.label == "Этот раунд окончен!")
-        XCTAssertTrue(alert.buttons.firstMatch.label == "Сыграть ещё раз")
+
+        XCTAssertTrue(alert.waitForExistence(timeout: 2))
+        XCTAssertEqual(alert.label, "Этот раунд окончен!")
+        XCTAssertEqual(alert.buttons.firstMatch.label, "Сыграть ещё раз")
     }
     
     func testAlertDismiss() {
-        sleep(2)
-        for _ in 1...10 {
+        for questionNumber in 1...10 {
+            waitForReadyQuestion(number: questionNumber)
             app.buttons["No"].tap()
-            sleep(2)
         }
-        
+
         let alert = app.alerts["Этот раунд окончен!"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 2))
         alert.buttons.firstMatch.tap()
-        
-        sleep(2)
-        
+
         let indexLabel = app.staticTexts["Index"]
-        
-        XCTAssertFalse(alert.exists)
-        XCTAssertTrue(indexLabel.label == "1/10")
+
+        waitForNonExistence(alert)
+        waitForReadyQuestion(number: 1)
+        XCTAssertEqual(indexLabel.label, "1/10")
+    }
+
+    private func waitForReadyQuestion(number: Int) {
+        let indexLabel = app.staticTexts["Index"]
+        let yesButton = app.buttons["Yes"]
+        let noButton = app.buttons["No"]
+
+        if number == 1 {
+            XCTAssertTrue(indexLabel.waitForExistence(timeout: 2))
+            waitForEnabled(yesButton)
+        } else {
+            waitForLabel(indexLabel, toEqual: "\(number)/10")
+        }
+
+        XCTAssertEqual(indexLabel.label, "\(number)/10")
+        XCTAssertTrue(yesButton.isEnabled)
+        XCTAssertTrue(noButton.isEnabled)
+    }
+
+    private func waitForLabel(_ element: XCUIElement, toEqual label: String) {
+        let predicate = NSPredicate(format: "label == %@", label)
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 2), .completed)
+    }
+
+    private func waitForEnabled(_ element: XCUIElement) {
+        let predicate = NSPredicate(format: "enabled == true")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 2), .completed)
+    }
+
+    private func waitForNonExistence(_ element: XCUIElement) {
+        let predicate = NSPredicate(format: "exists == false")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 2), .completed)
     }
 }

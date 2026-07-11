@@ -8,6 +8,7 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     private(set) var answerButtonsEnabledStates: [Bool] = []
     private(set) var showStepCallCount = 0
     private(set) var highlightImageBorderCallCount = 0
+    private(set) var networkErrorMessages: [String] = []
 
     func show(quiz step: QuizStepViewModel) {
         showStepCallCount += 1
@@ -34,7 +35,7 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
     }
     
     func showNetworkError(message: String) {
-        
+        networkErrorMessages.append(message)
     }
 }
 
@@ -130,6 +131,22 @@ final class MovieQuizPresenterTests: XCTestCase {
         XCTAssertEqual(viewControllerMock.showStepCallCount, 1)
         XCTAssertEqual(viewControllerMock.hideLoadingIndicatorCallCount, 1)
         XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false, true])
+    }
+
+    @MainActor
+    func testLoadingFailureSwitchesToErrorAndDisablesButtons() {
+        let viewControllerMock = MovieQuizViewControllerMock()
+        let questionFactoryMock = QuestionFactoryMock()
+        let sut = MovieQuizPresenter(
+            viewController: viewControllerMock,
+            questionFactory: questionFactoryMock
+        )
+
+        sut.didFailToLoadData(with: TestError.loadingFailed)
+
+        XCTAssertEqual(viewControllerMock.hideLoadingIndicatorCallCount, 1)
+        XCTAssertEqual(viewControllerMock.answerButtonsEnabledStates, [false, false])
+        XCTAssertEqual(viewControllerMock.networkErrorMessages.count, 1)
     }
 
     @MainActor

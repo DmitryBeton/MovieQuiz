@@ -42,3 +42,36 @@ struct MoviesLoader: MoviesLoading {
         }
     }
 }
+
+/// Локальная замена сетевого слоя, которая включается только launch-аргументом UI-тестов.
+final class UITestNetworkStub: MoviesLoading, ImageLoading, @unchecked Sendable {
+    private let imageData = Data(base64Encoded:
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    ) ?? Data()
+
+    func loadMovies(handler: @escaping @Sendable (Result<MostPopularMovies, Error>) -> Void) {
+        let movies = (1...10).compactMap { index -> MostPopularMovie? in
+            guard let url = URL(string: "https://ui-test.local/poster-\(index).jpg") else {
+                return nil
+            }
+            return MostPopularMovie(
+                title: "UI Test Movie \(index)",
+                rating: "8.0",
+                imageURL: url
+            )
+        }
+        handler(.success(MostPopularMovies(errorMessage: "", items: movies)))
+    }
+
+    func loadImageData(
+        from url: URL,
+        handler: @escaping @Sendable (Result<Data, Error>) -> Void
+    ) -> ImageLoadingTask {
+        handler(.success(imageData))
+        return UITestImageLoadingTask()
+    }
+}
+
+private struct UITestImageLoadingTask: ImageLoadingTask {
+    func cancel() { }
+}

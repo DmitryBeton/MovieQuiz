@@ -4,6 +4,28 @@ protocol NetworkRouting {
     func fetch(url: URL, handler: @escaping @Sendable (Result<Data, Error>) -> Void)
 }
 
+protocol NetworkSessionTask: Sendable {
+    func resume()
+}
+
+extension URLSessionDataTask: NetworkSessionTask { }
+
+protocol NetworkSession: Sendable {
+    func makeDataTask(
+        with request: URLRequest,
+        completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void
+    ) -> NetworkSessionTask
+}
+
+extension URLSession: NetworkSession {
+    func makeDataTask(
+        with request: URLRequest,
+        completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void
+    ) -> NetworkSessionTask {
+        dataTask(with: request, completionHandler: completionHandler)
+    }
+}
+
 /// Отвечает за загрузку данных по URL
 struct NetworkClient: NetworkRouting {
     
@@ -11,11 +33,17 @@ struct NetworkClient: NetworkRouting {
         case codeError
         case emptyData
     }
+
+    private let session: NetworkSession
+
+    init(session: NetworkSession = URLSession.shared) {
+        self.session = session
+    }
     
     func fetch(url: URL, handler: @escaping @Sendable (Result<Data, Error>) -> Void) {
         let request = URLRequest(url: url)
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = session.makeDataTask(with: request) { data, response, error in
             // Проверяем, пришла ли ошибка
             if let error = error {
                 handler(.failure(error))
