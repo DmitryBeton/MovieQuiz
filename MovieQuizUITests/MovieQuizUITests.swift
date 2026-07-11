@@ -11,7 +11,6 @@ import XCTest
 final class MovieQuizUITests: XCTestCase {
     // swiftlint:disable:next implicitly_unwrapped_optional
     nonisolated(unsafe) var app: XCUIApplication!
-    func testScreenCast() throws { }
     
     nonisolated override func setUpWithError() throws {
         try super.setUpWithError()
