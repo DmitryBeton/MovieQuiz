@@ -15,11 +15,16 @@ extension URLSessionDataTask: ImageLoadingTask { }
 
 final class ImageLoader: ImageLoading, @unchecked Sendable {
     private let session: URLSession
-    private let lock = NSLock()
-    private var cache: [URL: Data] = [:]
+    private let cache = NSCache<NSURL, NSData>()
 
-    init(session: URLSession = .shared) {
+    init(
+        session: URLSession = .shared,
+        cacheCountLimit: Int = 100,
+        cacheTotalCostLimit: Int = 50 * 1024 * 1024
+    ) {
         self.session = session
+        cache.countLimit = cacheCountLimit
+        cache.totalCostLimit = cacheTotalCostLimit
     }
 
     func loadImageData(
@@ -57,15 +62,12 @@ final class ImageLoader: ImageLoading, @unchecked Sendable {
     }
 
     private func cachedData(for url: URL) -> Data? {
-        lock.lock()
-        defer { lock.unlock() }
-        return cache[url]
+        cache.object(forKey: url as NSURL) as Data?
     }
 
     private func cache(_ data: Data, for url: URL) {
-        lock.lock()
-        cache[url] = data
-        lock.unlock()
+        guard data.count <= cache.totalCostLimit else { return }
+        cache.setObject(data as NSData, forKey: url as NSURL, cost: data.count)
     }
 }
 

@@ -24,9 +24,13 @@ final class MovieQuizViewController: UIViewController, AlertPresenterProtocol, M
             let networkStub = UITestNetworkStub()
             presenter = MovieQuizPresenter(
                 viewController: self,
-                moviesLoader: networkStub,
-                imageLoader: networkStub,
-                answerResultDelay: 0.01
+                questionFactoryBuilder: { delegate in
+                    QuestionFactory(
+                        moviesLoader: networkStub,
+                        imageLoader: networkStub,
+                        delegate: delegate
+                    )
+                }
             )
         } else {
             presenter = MovieQuizPresenter(viewController: self)

@@ -1,5 +1,7 @@
 import UIKit
 
+typealias QuestionFactoryBuilder = @MainActor (QuestionFactoryDelegate) -> QuestionFactoryProtocol
+
 @MainActor
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
@@ -22,29 +24,18 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var isLoadingData = false
     private var state: QuizState?
-    private let answerResultDelay: TimeInterval
+    private let answerFeedbackDuration: TimeInterval = 1
 
     init(
         viewController: MovieQuizViewControllerProtocol,
-        questionFactory: QuestionFactoryProtocol? = nil,
         statisticService: StatisticServiceProtocol = StatisticServiceImplementation(),
-        moviesLoader: MoviesLoading = MoviesLoader(),
-        imageLoader: ImageLoading = ImageLoader(),
-        answerResultDelay: TimeInterval = 1
+        questionFactoryBuilder: QuestionFactoryBuilder = { delegate in
+            QuestionFactory(moviesLoader: MoviesLoader(), delegate: delegate)
+        }
     ) {
         self.viewController = viewController
         self.statisticService = statisticService
-        self.answerResultDelay = answerResultDelay
-
-        if let questionFactory {
-            self.questionFactory = questionFactory
-        } else {
-            self.questionFactory = QuestionFactory(
-                moviesLoader: moviesLoader,
-                imageLoader: imageLoader,
-                delegate: self
-            )
-        }
+        self.questionFactory = questionFactoryBuilder(self)
 
         startLoadingData()
     }
@@ -127,7 +118,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + answerResultDelay) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + answerFeedbackDuration) { [weak self] in
             guard let self = self else { return }
             self.showNextQuestionOrResults()
         }

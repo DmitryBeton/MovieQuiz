@@ -47,7 +47,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
         let emptyData = Data()
         let question = QuizQuestion(image: emptyData, text: "Question Text", correctAnswer: true)
@@ -67,7 +67,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
 
         sut.switchToNextQuestion()
@@ -85,7 +85,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
         sut.switchToNextQuestion()
         sut.didFailToLoadData(with: TestError.loadingFailed)
@@ -106,7 +106,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
 
         sut.retryLoading()
@@ -122,7 +122,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
         let question = QuizQuestion(image: Data(), text: "Question", correctAnswer: true)
 
@@ -139,7 +139,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
 
         sut.didFailToLoadData(with: TestError.loadingFailed)
@@ -155,7 +155,7 @@ final class MovieQuizPresenterTests: XCTestCase {
         let questionFactoryMock = QuestionFactoryMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
         let question = QuizQuestion(image: Data(), text: "Question", correctAnswer: true)
 
@@ -174,8 +174,8 @@ final class MovieQuizPresenterTests: XCTestCase {
         let statisticServiceMock = StatisticServiceMock()
         let sut = MovieQuizPresenter(
             viewController: viewControllerMock,
-            questionFactory: questionFactoryMock,
-            statisticService: statisticServiceMock
+            statisticService: statisticServiceMock,
+            questionFactoryBuilder: { _ in questionFactoryMock }
         )
 
         let message = sut.makeResultsMessage()
